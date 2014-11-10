@@ -1,12 +1,13 @@
 var app = angular.module("throughputApp", ['highcharts-ng']);
 
 app.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.defaults.xsrfCookieName = 'csrftoken';
+    $httpProvider.defaults.xsrfCookieName = 'csrftoken`';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 }]);
 
 app.controller("throughputController", function($scope, limitToFilter, $http, $log) {
   
+  // default 
   $scope.curThroughput = {
     id: 0,
     type: '',
@@ -19,74 +20,59 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
 
   $scope.filters = {
     type: 'all',
+    from_date: '',
+    to_date: '',
+    imei: '',
+    sdk_version: '',
+    app_version: ''
   };
 
-  $scope.pie_items = [
-                      ['CONDUCTED', 2],
-                      ['FAILED', 3],
-                      ['RESTRICTED', 4]
+  $scope.pie_items = [     
+                      ['CONDUCTED', 0],
+                      ['FAILED', 0],
+                      ['RESTRICTED', 0]
                    ];
-  /*
-  $scope.$watch('filters.type', function(newVal){
-       $scope.pie_items = function() {
-        switch($scope.filters.type) {
-          case('all'):
-            return [
-                      ['CONDUCTED', $scope.conductedTests.length],
-                      ['FAILED', $scope.failedTests.length],
-                      ['RESTRICTED', $scope.restrictedTests.length]
-                   ];
-          case('conducted'):
-            return [
-                      ['OK', countSubTypetNum($scope.conductedTests, 'OK')],
-                      ['SENT', countSubTypetNum($scope.conductedTests, 'SENT')],
-                      ['OTHERS', countSubTypetNum($scope.conductedTests, 'OTHERS')]
-                   ];
-          case('failed'):
-            return [
-                      ['TIMEOUT', countSubTypetNum($scope.failedTests, 'TIMEOUT')],
-                      ['OTHERS', countSubTypetNum($scope.failedTests, 'OTHERS')],
-                   ];
-          case('restricted'):
-            return [
-                      ['DATALIMIT', countSubTypetNum($scope.restrictedTests, 'DATALIMIT')],
-                      ['OTHERS', countSubTypetNum($scope.restrictedTests, 'OTHERS')],
-                   ];
-        }
-      }();
-  }, true);
-*/
-
+  // end default
 
 	$scope.initialize = function() {
 		$scope.load();
 	};
+/*
+  $scope.post = function() {
+    var mydata = {params: {type: 'FAILED', app_name: "com.glove", app_version: "1.3.7", date: "2014-11-05", details: "testing", imei: "123456789098765", sdk_version: "1.5.1", sub_type: "TIMEOUT"}};
+    $http.post('http://localhost:8888/datalib_analytics_dashboard/libs/proxy.php', {data: mydata}).then(function(response){      
+      $scope.load();
+      $scope.curTest = {};
+      console.log('save then', response);
+    });
+  };
+*/
 	
 	$scope.load = function() {
-		
-    $http.get('http://datalib-analytics-api-dev.crowdx.co/api/throughputs/').then(function(response){       // promise service
+		var mydata = $scope.filters;
+    $http.get('http://localhost:8888/datalib_analytics_dashboard/libs/proxy.php', {data: mydata}).then(function(response){       // promise service
 			
-      $scope.tests =  response.data;
+      $scope.throughputs =  response.data;
       console.log(response);
       $scope.conductedTests = [];
       $scope.failedTests = [];
       $scope.restrictedTests = [];
       
-      for (i=0; i<$scope.tests.length; i++) {
-        var test = $scope.tests[i];
-        switch(test.type) {
+      for (i=0; i<$scope.throughputs.length; i++) {
+        var throughput = $scope.throughputs[i];
+        switch(throughput.type) {
           case 'CONDUCTED':
-            $scope.conductedTests.push(test);
+            $scope.conductedTests.push(throughput);
             break;
           case 'FAILED':
-            $scope.failedTests.push(test);
+            $scope.failedTests.push(throughput);
             break;
           case 'RESTRICTED':
-            $scope.restrictedTests.push(test);
+            $scope.restrictedTests.push(throughput);
             break;
         }
       }
-			console.log('load then', $scope.tests);
+			console.log('all throughputs', $scope.throughputs);
       console.log('CONDUCTED', $scope.conductedTests);
       console.log('FAILED', $scope.failedTests);
       console.log('RESTRICTED', $scope.restrictedTests);
@@ -121,24 +107,39 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
 		});
 	};
 
-  
-	$scope.save = function() {
-		$http.post('http://datalib-analytics-api-dev.crowdx.co/api/throughputs/', $scope.curTest).then(function(response){      
-			$scope.load();
-			$scope.curTest = {};
-			console.log('save then', response);
-		});
-	};
 
-	$scope.delete = function(test) {
-		console.log('test', test);
-		$http.delete('http://datalib-analytics-api-dev.crowdx.co/api/throughputs/'+test.id).then(function(response){      
-			$scope.load();
-			console.log('delete then', response);
-		});
-			$scope.load();
+  $scope.$watch('filters.type', function(newVal){
+    if($scope.conductedTests) {
+       $scope.pie_items = function() {
+        switch($scope.filters.type) {
+          case('all'):
+            return [
+                      ['CONDUCTED', $scope.conductedTests.length],
+                      ['FAILED', $scope.failedTests.length],
+                      ['RESTRICTED', $scope.restrictedTests.length]
+                   ];
+          case('conducted'):
+            return [
+                      ['OK', countSubTypetNum($scope.conductedTests, 'OK')],
+                      ['SENT', countSubTypetNum($scope.conductedTests, 'SENT')],
+                      ['OTHERS', countSubTypetNum($scope.conductedTests, 'OTHERS')]
+                   ];
+          case('failed'):
+            return [
+                      ['TIMEOUT', countSubTypetNum($scope.failedTests, 'TIMEOUT')],
+                      ['OTHERS', countSubTypetNum($scope.failedTests, 'OTHERS')],
+                   ];
+          case('restricted'):
+            return [
+                      ['DATALIMIT', countSubTypetNum($scope.restrictedTests, 'DATALIMIT')],
+                      ['OTHERS', countSubTypetNum($scope.restrictedTests, 'OTHERS')],
+                   ];
+        }
+      }()
+    };
+  }, true);
 
-	};	
+
 
 	$scope.addPoints = function () {
         var seriesArray = $scope.highchartsNG.series
@@ -146,7 +147,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         seriesArray[rndIdx].data = seriesArray[rndIdx].data.concat([1, 10, 20])
     };
 
-    $scope.addSeries = function () {
+    $scope.changeSeries = function () {
         var rnd = []
         for (var i = 0; i < 10; i++) {
             rnd.push(Math.floor(Math.random() * 20) + 1)
@@ -161,11 +162,11 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         var rndIdx = Math.floor(Math.random() * seriesArray.length);
         seriesArray.splice(rndIdx, 1)
     }
-
+/*
     $scope.options = {
         type: 'line'
     }
-
+*/
     $scope.swapChartType = function () {
         if (this.highchartsNG.options.chart.type === 'line') {
             this.highchartsNG.options.chart.type = 'bar'
@@ -181,10 +182,10 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
             }
         },
         series: [{
-            data: [10, 15, 12, 8, 7]
+            data: [10, 15, 12, 8, 7]        // 
         }],
         title: {
-            text: 'Total Daily Tests'
+            text: 'Daily Throuput tests'
         },
         loading: false
     };
