@@ -1,141 +1,121 @@
 var app = angular.module("throughputApp", ['highcharts-ng']);
-
+/*
 app.config(['$httpProvider', function($httpProvider) {
     $httpProvider.defaults.xsrfCookieName = 'csrftoken`';
     $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
 }]);
-
+*/
 app.controller("throughputController", function($scope, limitToFilter, $http, $log) {
-  
-  // default 
-  $scope.curThroughput = {
-    id: 0,
-    type: '',
-    sub_type:'',
-    imei: '',
-    app_version: '',
-    sdk_version: '',
-    date: '',
-  };
-
-  $scope.filters = {
-    type: 'all',
-    from_date: '',
-    to_date: '',
-    imei: '',
-    sdk_version: '',
-    app_version: ''
-  };
-
-  $scope.pie_items = [     
-                      ['CONDUCTED', 0],
-                      ['FAILED', 0],
-                      ['RESTRICTED', 0]
-                   ];
-  // end default
 
 	$scope.initialize = function() {
+
+    $scope.baseURL = 'http://localhost:8888/datalib_analytics_dashboard/libs/proxy.php';
+
+    $scope.filters = {
+      from_date: '',
+      to_date: '',
+      imei: '',
+      sdk_version: '',
+      app_version: ''
+    };
+    $scope.pie_type = 'all';
+    $scope.pie_items = [     
+                        ['CONDUCTED', 0],
+                        ['FAILED', 0],
+                        ['RESTRICTED', 0]
+                     ];
+    $scope.loadedLists = 0;
 		$scope.load();
 	};
-/*
-  $scope.post = function() {
-    var mydata = {params: {type: 'FAILED', app_name: "com.glove", app_version: "1.3.7", date: "2014-11-05", details: "testing", imei: "123456789098765", sdk_version: "1.5.1", sub_type: "TIMEOUT"}};
-    $http.post('http://localhost:8888/datalib_analytics_dashboard/libs/proxy.php', {data: mydata}).then(function(response){      
-      $scope.load();
-      $scope.curTest = {};
-      console.log('save then', response);
-    });
-  };
-*/
-	
-	$scope.load = function() {
-		var mydata = $scope.filters;
-    $http.get('http://localhost:8888/datalib_analytics_dashboard/libs/proxy.php', {data: mydata}).then(function(response){       // promise service
-			
-      $scope.throughputs =  response.data;
-      console.log(response);
-      $scope.conductedTests = [];
-      $scope.failedTests = [];
-      $scope.restrictedTests = [];
-      
-      for (i=0; i<$scope.throughputs.length; i++) {
-        var throughput = $scope.throughputs[i];
-        switch(throughput.type) {
-          case 'CONDUCTED':
-            $scope.conductedTests.push(throughput);
-            break;
-          case 'FAILED':
-            $scope.failedTests.push(throughput);
-            break;
-          case 'RESTRICTED':
-            $scope.restrictedTests.push(throughput);
-            break;
-        }
-      }
-			console.log('all throughputs', $scope.throughputs);
-      console.log('CONDUCTED', $scope.conductedTests);
-      console.log('FAILED', $scope.failedTests);
-      console.log('RESTRICTED', $scope.restrictedTests);
 
-     $scope.pie_items = function() {
-        switch($scope.filters.type) {
+  $scope.change = function() {
+    $scope.loadedLists = 0;
+    $scope.load();    
+  }
+	
+  /*
+  * construct 3 lists [Conducted, Failed, Restricted] under filters 
+  */
+	$scope.load = function() {   
+    
+    var url = $scope.baseURL;
+    url+='?';
+    for (var key in $scope.filters) {
+      if($scope.filters[key] !== '')
+        url = url.concat(key, '=', $scope.filters[key], '&');
+    }
+    
+    console.log('base URL with filters  -->', url);
+    var url_1 = url+'type=CONDUCTED';
+    var url_2 = url+'type=FAILED';
+    var url_3 = url+'type=RESTRICTED';
+
+    $http.get(url_1).then(function(response){       // promise service			
+        $scope.conductedThroughputs = response.data;
+        console.log('conductedThroughputs --> ',$scope.conductedThroughputs);
+        $scope.loadedLists++;
+    });
+
+    $http.get(url_2).then(function(response){       // promise service      
+        $scope.failedThroughputs = response.data;
+        console.log('failedThroughputs --> ',$scope.failedThroughputs);
+        $scope.loadedLists++;
+
+      });
+
+    $http.get(url_3).then(function(response){       // promise service      
+        $scope.restrictedThroughputs = response.data;
+        console.log('restrictedThroughputs --> ',$scope.restrictedThroughputs);
+        $scope.loadedLists++;
+
+      }); 
+	};
+  
+  $scope.update_pie_items = function() {
+    
+    $scope.pie_items = function() {
+        switch($scope.pie_type) {
           case('all'):
             return [
-                      ['CONDUCTED', $scope.conductedTests.length],
-                      ['FAILED', $scope.failedTests.length],
-                      ['RESTRICTED', $scope.restrictedTests.length]
+                      ['CONDUCTED', $scope.conductedThroughputs.length],
+                      ['FAILED', $scope.failedThroughputs.length],
+                      ['RESTRICTED', $scope.restrictedThroughputs.length]
                    ];
           case('conducted'):
             return [
-                      ['OK', countSubTypetNum($scope.conductedTests, 'OK')],
-                      ['SENT', countSubTypetNum($scope.conductedTests, 'SENT')],
-                      ['OTHERS', countSubTypetNum($scope.conductedTests, 'OTHERS')]
+                      ['OK', countSubTypetNum($scope.conductedThroughputs, 'OK')],
+                      ['SENT', countSubTypetNum($scope.conductedThroughputs, 'SENT')],
+                      ['OTHERS', countSubTypetNum($scope.conductedThroughputs, 'OTHERS')]
                    ];
           case('failed'):
             return [
-                      ['TIMEOUT', countSubTypetNum($scope.failedTests, 'TIMEOUT')],
-                      ['OTHERS', countSubTypetNum($scope.failedTests, 'OTHERS')],
+                      ['TIMEOUT', countSubTypetNum($scope.failedThroughputs, 'TIMEOUT')],
+                      ['OTHERS', countSubTypetNum($scope.failedThroughputs, 'OTHERS')],
                    ];
           case('restricted'):
             return [
-                      ['DATALIMIT', countSubTypetNum($scope.restrictedTests, 'DATALIMIT')],
-                      ['OTHERS', countSubTypetNum($scope.restrictedTests, 'OTHERS')],
+                      ['DATALIMIT', countSubTypetNum($scope.restrictedThroughputs, 'DATALIMIT')],
+                      ['OTHERS', countSubTypetNum($scope.restrictedThroughputs, 'OTHERS')],
                    ];
         }
       }();
-      //$scope.selectedTypes = limitToFilter($scope.types, 3);
-		});
-	};
+}
 
+  /*
+   * When finish loading, update Pie Chart
+   */
+  $scope.$watch('loadedLists', function(newVal){
 
-  $scope.$watch('filters.type', function(newVal){
-    if($scope.conductedTests) {
-       $scope.pie_items = function() {
-        switch($scope.filters.type) {
-          case('all'):
-            return [
-                      ['CONDUCTED', $scope.conductedTests.length],
-                      ['FAILED', $scope.failedTests.length],
-                      ['RESTRICTED', $scope.restrictedTests.length]
-                   ];
-          case('conducted'):
-            return [
-                      ['OK', countSubTypetNum($scope.conductedTests, 'OK')],
-                      ['SENT', countSubTypetNum($scope.conductedTests, 'SENT')],
-                      ['OTHERS', countSubTypetNum($scope.conductedTests, 'OTHERS')]
-                   ];
-          case('failed'):
-            return [
-                      ['TIMEOUT', countSubTypetNum($scope.failedTests, 'TIMEOUT')],
-                      ['OTHERS', countSubTypetNum($scope.failedTests, 'OTHERS')],
-                   ];
-          case('restricted'):
-            return [
-                      ['DATALIMIT', countSubTypetNum($scope.restrictedTests, 'DATALIMIT')],
-                      ['OTHERS', countSubTypetNum($scope.restrictedTests, 'OTHERS')],
-                   ];
-        }
-      }()
+      if($scope.loadedLists==3) {
+        $scope.throughputs = $scope.conductedThroughputs.concat($scope.failedThroughputs, $scope.restrictedThroughputs);
+        $scope.update_pie_items();
+      }
+  }, true);
+
+  $scope.$watch('pie_type', function(newVal){
+    
+    if($scope.loadedLists==3) {
+       $scope.update_pie_items();
     };
   }, true);
 
@@ -208,7 +188,7 @@ app.directive('hcPie', function () {
     },
     template: '<div id="container" style="margin: 0 auto">not working</div>',
     link: function (scope, element, attrs) {
-      console.log(attrs);
+      //console.log(attrs);
       var chart = new Highcharts.Chart({
         chart: {
           renderTo: 'container',

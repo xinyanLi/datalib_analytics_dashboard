@@ -3,16 +3,8 @@
 // get METHOD
 $request_method = $_SERVER['REQUEST_METHOD'];
 
-// get PARAMS
-if ($request_method === 'POST')
-    {
-        $myData = $_POST['myData'];
-    }else if($request_method === 'GET'){
-    	$myData = $_GET['myData'];
-    };
-
-$request_params = json_decode($myData, true);          // --> array
-$request_url = urldecode('http://datalib-analytics-api-dev.crowdx.co/api/throughputs/');
+$request_url = urldecode('http://127.0.0.1:8000/api/throughputs/');
+//'http://datalib-analytics-api-dev.crowdx.co/api/throughputs/'
 
 
 /**'http://datalib-analytics-api-dev.crowdx.co/api/throughputs/'
@@ -34,9 +26,15 @@ foreach ( $_SERVER as $key => $value ) {
 }
 
 // append query string for GET requests   --> filters
-if ( $request_method == 'GET' && count( $request_params ) > 0 ) {
-	$request_url .= '?' . http_build_query( $request_params );
-		//echo " • params: ".json_encode($request_params)." \n\n";
+if ( $request_method == 'GET') {
+	//var_dump($_GET);
+	// get PARAMS
+	$request_url .= '?';
+	foreach ( $_GET as $key => $value ) {
+		$request_url .= $key.'='.$value.'&';
+    };
+//	$request_params = json_decode($myData, true);          // --> array
+//		echo " • params: ".json_encode($request_params)." \n\n";
 }
 
 // let the request begin
@@ -44,7 +42,7 @@ $ch = curl_init( $request_url );
 curl_setopt( $ch, CURLOPT_HTTPHEADER, $request_headers );   // (re-)send headers
 curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );	 // return response
 curl_setopt( $ch, CURLOPT_HEADER, true );	   // enabled response headers
-
+/*
 // add data for POST requests
 if ( 'POST' == $request_method ) {
 	if(is_array( $request_params ) ) {
@@ -57,6 +55,7 @@ if ( 'POST' == $request_method ) {
 	curl_setopt( $ch, CURLOPT_POST, true );
 	curl_setopt( $ch, CURLOPT_POSTFIELDS,  json_encode($post_data) );
 } 
+*/
 // retrieve response (headers and content)
 $response = curl_exec( $ch );
 $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
