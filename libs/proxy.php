@@ -4,7 +4,7 @@
 $request_method = $_SERVER['REQUEST_METHOD'];
 
 $request_url = urldecode('http://127.0.0.1:8000/api/throughputs/');
-//'http://datalib-analytics-api-dev.crowdx.co/api/throughputs/'
+//$request_url = urldecode('http://datalib-analytics-api-dev.crowdx.co/api/throughputs/');
 
 
 /**'http://datalib-analytics-api-dev.crowdx.co/api/throughputs/'

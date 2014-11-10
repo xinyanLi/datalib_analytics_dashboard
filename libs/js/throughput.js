@@ -42,7 +42,15 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
     url+='?';
     for (var key in $scope.filters) {
       if($scope.filters[key] !== '')
+        if (key=='from_date' || key=="to_date") {
+          var date = $scope.filters[key].split('-');
+          if(date.length == 3){
+            var new_date = date[0]+'/'+date[1]+'/'+date[1];
+            url = url.concat(key, '=', new Date(new_date).getTime(), '&');
+          }
+        } else {
         url = url.concat(key, '=', $scope.filters[key], '&');
+      }
     }
     
     console.log('base URL with filters  -->', url);
@@ -55,7 +63,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         console.log('conductedThroughputs --> ',$scope.conductedThroughputs);
         $scope.loadedLists++;
     });
-
+    
     $http.get(url_2).then(function(response){       // promise service      
         $scope.failedThroughputs = response.data;
         console.log('failedThroughputs --> ',$scope.failedThroughputs);
@@ -108,7 +116,9 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
 
       if($scope.loadedLists==3) {
         $scope.throughputs = $scope.conductedThroughputs.concat($scope.failedThroughputs, $scope.restrictedThroughputs);
+        console.log('ALL THROUGHPUTS -->', $scope.throughputs);
         $scope.update_pie_items();
+        $scope.highchartsNG.series = [{data:[1,2,3,4], name: 'CONDUCTED'} , {data:[2,4,6,8], name: 'FAILED'}, {data:[0,3,1,2], name: 'RESTRICTED'}, {data:[9,9,9,10], name: 'TOTAL'}];
       }
   }, true);
 
@@ -119,10 +129,8 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
     };
   }, true);
 
-
-
 	$scope.addPoints = function () {
-        var seriesArray = $scope.highchartsNG.series
+        var seriesArray = $scope.highchartsNG.series;
         var rndIdx = Math.floor(Math.random() * seriesArray.length);
         seriesArray[rndIdx].data = seriesArray[rndIdx].data.concat([1, 10, 20])
     };
@@ -162,7 +170,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
             }
         },
         series: [{
-            data: [10, 15, 12, 8, 7]        // 
+            data: [10, 15, 12, 8, 7],   // useless
         }],
         title: {
             text: 'Daily Throuput tests'
@@ -210,7 +218,7 @@ app.directive('hcPie', function () {
             dataLabels: {
               enabled: true,
               color: '#000000',
-              connectorColor: '#000000',
+              connectorColor: '#00000',
               formatter: function () {
                 return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %';
               }
