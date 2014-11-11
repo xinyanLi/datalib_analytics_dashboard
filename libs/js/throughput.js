@@ -85,9 +85,9 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         switch($scope.pie_type) {
           case('all'):
             return [
-                      ['CONDUCTED', $scope.conductedThroughputs.length],
+                      ['RESTRICTED', $scope.restrictedThroughputs.length],
                       ['FAILED', $scope.failedThroughputs.length],
-                      ['RESTRICTED', $scope.restrictedThroughputs.length]
+                      ['CONDUCTED', $scope.conductedThroughputs.length]
                    ];
           case('conducted'):
             return getSubTypePairArray($scope.conductedThroughputs);
@@ -112,15 +112,18 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
   }
 
   /*
-   * When finish loading, update Pie Chart
+   * When finish loading, update Pie Chart and Line chart 
    */
   $scope.$watch('loadedLists', function(newVal){
 
       if($scope.loadedLists==3) {
-        $scope.throughputs = $scope.conductedThroughputs.concat($scope.failedThroughputs, $scope.restrictedThroughputs);
-        console.log('ALL THROUGHPUTS -->', $scope.throughputs);
+       // $scope.throughputs = $scope.conductedThroughputs.concat($scope.failedThroughputs, $scope.restrictedThroughputs);
+        //console.log('ALL THROUGHPUTS -->', $scope.throughputs);
         $scope.update_pie_items();
-       // $scope.highchartsNG.series = [{data:getDailyArray($scope.conductedThroughputs), name: 'CONDUCTED'} , {data:getDailyArray($scope.failedThroughputs), name: 'FAILED'}, {data:getDailyArray($scope.restrictedThroughputs), name: 'RESTRICTED'}, {data:getDailyArray($scope.conductedThroughputs), name: 'TOTAL'}];
+        var restrictedSeriesData = getDailyArray($scope.restrictedThroughputs);
+        var failedSeriesData = getDailyArray($scope.failedThroughputs);
+        var conductedSeriesData = getDailyArray($scope.conductedThroughputs);
+        $scope.highchartsNG.series = [{data:restrictedSeriesData, name: 'RESTRICTED'} , {data: failedSeriesData, name: 'FAILED'}, {data: conductedSeriesData, name: 'CONDUCTED'}, {data: getTotalDailyArray(restrictedSeriesData, conductedSeriesData, failedSeriesData), name: 'TOTAL'}];
       }
   }, true);
 
@@ -169,42 +172,40 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         },
         
         series: [{
-            name: 'CONDUCTED',
+            name: 'RESTRICTED',
             data: [
-                [Date.UTC(2014, 10, 4), 3],
-                [Date.UTC(2014, 10, 5), 5],
-                [Date.UTC(2014, 10, 6), 7],
-                [Date.UTC(2014, 10, 7), 26],
-                [Date.UTC(2014, 10, 8), 5],
-                [Date.UTC(2014, 10, 9), 9],
-                [Date.UTC(2014, 10, 10), 8],
-                [Date.UTC(2014, 10, 11), 6],
-                [Date.UTC(2014, 10, 12), 4],
-                [Date.UTC(2014, 10, 13), 9],
-                [Date.UTC(2014, 10, 14), 5],
-                [Date.UTC(2014, 10, 15), 8]
+                [Date.UTC(2014, 10, 4), 9],
+                [Date.UTC(2014, 10, 5), 1],
+                [Date.UTC(2014, 10, 6), 0],
+                [Date.UTC(2014, 10, 7), 6],
+                [Date.UTC(2014, 10, 8), 2],
+                [Date.UTC(2014, 10, 9), 3],
+                [Date.UTC(2014, 10, 10), 5],
+                [Date.UTC(2014, 10, 11), 1],
+                [Date.UTC(2014, 10, 12), 9],
+                [Date.UTC(2014, 10, 13), 0],
+                [Date.UTC(2014, 10, 14), 0],
+                [Date.UTC(2014, 10, 15), 5]
             ]
             //[0,2,3,4,5,6,7],
             //pointStart: 1
         }, {
             name: 'FAILED',
             data: [
-                [Date.UTC(2014, 10, 4), 3],
                 [Date.UTC(2014, 10, 5), 5],
-                [Date.UTC(2014, 10, 6), 7],
-                [Date.UTC(2014, 10, 7), 26],
+                [Date.UTC(2014, 10, 6), 2],
+                [Date.UTC(2014, 10, 7), 6],
                 [Date.UTC(2014, 10, 8), 5],
-                [Date.UTC(2014, 10, 9), 9],
-                [Date.UTC(2014, 10, 10), 8],
-                [Date.UTC(2014, 10, 11), 6],
-                [Date.UTC(2014, 10, 12), 4],
-                [Date.UTC(2014, 10, 13), 9],
+                [Date.UTC(2014, 10, 9), 1],
+                [Date.UTC(2014, 10, 10), 3],
+                [Date.UTC(2014, 10, 11), 4],
+                [Date.UTC(2014, 10, 12), 1],
+                [Date.UTC(2014, 10, 13), 0],
                 [Date.UTC(2014, 10, 14), 5],
-                [Date.UTC(2014, 10, 15), 8]
             ],
            // pointStart: 1
         }, {
-            name: 'RESTRICTED',
+            name: 'CONDUCTED',
             data: [
                 [Date.UTC(2014, 10, 4), 4],
                 [Date.UTC(2014, 10, 5), 6],
@@ -223,18 +224,18 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         }, {
             name: 'TOTAL',
             data: [
-                [Date.UTC(2014, 10, 4), 9],
-                [Date.UTC(2014, 10, 5), 1],
-                [Date.UTC(2014, 10, 6), 0],
-                [Date.UTC(2014, 10, 7), 6],
-                [Date.UTC(2014, 10, 8), 2],
-                [Date.UTC(2014, 10, 9), 3],
-                [Date.UTC(2014, 10, 10), 5],
-                [Date.UTC(2014, 10, 11), 1],
-                [Date.UTC(2014, 10, 12), 9],
-                [Date.UTC(2014, 10, 13), 0],
-                [Date.UTC(2014, 10, 14), 0],
-                [Date.UTC(2014, 10, 15), 5]
+                 [Date.UTC(2014, 10, 4), 3],
+                [Date.UTC(2014, 10, 5), 5],
+                [Date.UTC(2014, 10, 6), 7],
+                [Date.UTC(2014, 10, 7), 26],
+                [Date.UTC(2014, 10, 8), 5],
+                [Date.UTC(2014, 10, 9), 9],
+                [Date.UTC(2014, 10, 10), 8],
+                [Date.UTC(2014, 10, 11), 6],
+                [Date.UTC(2014, 10, 12), 4],
+                [Date.UTC(2014, 10, 13), 9],
+                [Date.UTC(2014, 10, 14), 5],
+                [Date.UTC(2014, 10, 15), 8]
             ],
             //pointStart: 1
         }],
@@ -320,10 +321,39 @@ var getSubTypePairArray = function(throughputsList) {
         subTypeList[j] = 'unspecified';
       pairList[j] = [subTypeList[j], numberList[j]];
     }
-    console.log('subtype - numebr list', pairList);
+    console.log('subtype - number list', pairList);
     return pairList;
 }
 
 var getDailyArray = function(throughputsList) {
+  
+  var dateNumList = [[Date.UTC(2014, 10, 4), 0],
+                  [Date.UTC(2014, 10, 5), 0],
+                  [Date.UTC(2014, 10, 6), 0],
+                  [Date.UTC(2014, 10, 7), 0],
+                  [Date.UTC(2014, 10, 8), 0],
+                  [Date.UTC(2014, 10, 9), 0],
+                  [Date.UTC(2014, 10, 10), 0],
+                  [Date.UTC(2014, 10, 11), 0],
+                  [Date.UTC(2014, 10, 12), 0],
+                  [Date.UTC(2014, 10, 13), 0],
+                  [Date.UTC(2014, 10, 14), 0],
+                  [Date.UTC(2014, 10, 15), 0]];   // last date not show in chart
+  for (i=0; i<dateNumList.length-1; i++) {
+    for (j=0; j<throughputsList.length; j++) {
+        if (throughputsList[j].date >= dateNumList[i][0] && throughputsList[j].date < dateNumList[i+1][0]) {
+            dateNumList[i][1]++; 
+        }
+      }
+    }
+  //dateNumList[dateNumList.length-1] = null;
+  return dateNumList;
+}
 
+var getTotalDailyArray = function(a1, a2, a3) {
+  var total = a1;
+  for (i=0; i<a1.length; i++) {
+    total[i][1] = a1[i][1] + a2[i][1] +a3[i][1];
+  }
+  return total;
 }
