@@ -45,7 +45,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         if (key=='from_date' || key=="to_date") {
           var date = $scope.filters[key].split('-');
           if(date.length == 3){
-            var new_date = date[0]+'/'+date[1]+'/'+date[1];
+            var new_date = date[0]+'/'+date[1]+'/'+date[2];
             url = url.concat(key, '=', new Date(new_date).getTime(), '&');
           }
         } else {
@@ -91,26 +91,25 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
                    ];
           case('conducted'):
             return getSubTypePairArray($scope.conductedThroughputs);
-                   /*[
-                      ['OK', countSubTypetNum($scope.conductedThroughputs, 'OK')],
-                      ['SENT', countSubTypetNum($scope.conductedThroughputs, 'SENT')],
-                      ['OTHERS', countSubTypetNum($scope.conductedThroughputs, 'OTHERS')]
-                   ];*/
+                  
           case('failed'):
             return getSubTypePairArray($scope.failedThroughputs);
-                   /* [
-                      ['TIMEOUT', countSubTypetNum($scope.failedThroughputs, 'TIMEOUT')],
-                      ['OTHERS', countSubTypetNum($scope.failedThroughputs, 'OTHERS')],
-                   ];*/
+                   
           case('restricted'):
             return getSubTypePairArray($scope.restrictedThroughputs);
-                   /* [
-                      ['DATALIMIT', countSubTypetNum($scope.restrictedThroughputs, 'DATALIMIT')],
-                      ['OTHERS', countSubTypetNum($scope.restrictedThroughputs, 'OTHERS')],
-                   ];*/
+          default:
         }
       }();
-}
+  }
+
+
+  $scope.swapChartType = function () {
+        if (this.highchartsNG.options.chart.type === 'line') {
+            this.highchartsNG.options.chart.type = 'bar'
+        } else {
+            this.highchartsNG.options.chart.type = 'line'
+        }
+  }
 
   /*
    * When finish loading, update Pie Chart
@@ -121,7 +120,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         $scope.throughputs = $scope.conductedThroughputs.concat($scope.failedThroughputs, $scope.restrictedThroughputs);
         console.log('ALL THROUGHPUTS -->', $scope.throughputs);
         $scope.update_pie_items();
-        //$scope.highchartsNG.series = [{data:[1,2,3,4], name: 'CONDUCTED'} , {data:[2,4,6,8], name: 'FAILED'}, {data:[0,3,1,2], name: 'RESTRICTED'}, {data:[9,9,9,10], name: 'TOTAL'}];
+       // $scope.highchartsNG.series = [{data:getDailyArray($scope.conductedThroughputs), name: 'CONDUCTED'} , {data:getDailyArray($scope.failedThroughputs), name: 'FAILED'}, {data:getDailyArray($scope.restrictedThroughputs), name: 'RESTRICTED'}, {data:getDailyArray($scope.conductedThroughputs), name: 'TOTAL'}];
       }
   }, true);
 
@@ -131,40 +130,6 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
        $scope.update_pie_items();
     };
   }, true);
-
-	$scope.addPoints = function () {
-        var seriesArray = $scope.highchartsNG.series;
-        var rndIdx = Math.floor(Math.random() * seriesArray.length);
-        seriesArray[rndIdx].data = seriesArray[rndIdx].data.concat([1, 10, 20])
-    };
-
-    $scope.changeSeries = function () {
-        var rnd = []
-        for (var i = 0; i < 10; i++) {
-            rnd.push(Math.floor(Math.random() * 20) + 1)
-        }
-        $scope.highchartsNG.series.push({
-            data: rnd
-        })
-    }
-
-    $scope.removeRandomSeries = function () {
-        var seriesArray = $scope.highchartsNG.series
-        var rndIdx = Math.floor(Math.random() * seriesArray.length);
-        seriesArray.splice(rndIdx, 1)
-    }
-/*
-    $scope.options = {
-        type: 'line'
-    }
-*/
-    $scope.swapChartType = function () {
-        if (this.highchartsNG.options.chart.type === 'line') {
-            this.highchartsNG.options.chart.type = 'bar'
-        } else {
-            this.highchartsNG.options.chart.type = 'line'
-        }
-    }
 
     $scope.highchartsNG = {
         options: {
@@ -181,8 +146,8 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
             x: -20
         },
         xAxis: {
-            type: 'date',
-            tickInterval: 1,
+            type: 'datetime',
+            //tickInterval: 1,
             title: {
                 text: 'November'
             },
@@ -202,26 +167,76 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
                 floating: true,
                 borderWidth: 0
         },
-        tooltip: {
-            headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.x}-Nov <br>{point.y}'
-        },
+        
         series: [{
             name: 'CONDUCTED',
-            data: [0,2,3,4,5,6,7],
-            pointStart: 1
+            data: [
+                [Date.UTC(2014, 10, 4), 3],
+                [Date.UTC(2014, 10, 5), 5],
+                [Date.UTC(2014, 10, 6), 7],
+                [Date.UTC(2014, 10, 7), 26],
+                [Date.UTC(2014, 10, 8), 5],
+                [Date.UTC(2014, 10, 9), 9],
+                [Date.UTC(2014, 10, 10), 8],
+                [Date.UTC(2014, 10, 11), 6],
+                [Date.UTC(2014, 10, 12), 4],
+                [Date.UTC(2014, 10, 13), 9],
+                [Date.UTC(2014, 10, 14), 5],
+                [Date.UTC(2014, 10, 15), 8]
+            ]
+            //[0,2,3,4,5,6,7],
+            //pointStart: 1
         }, {
             name: 'FAILED',
-            data: [5,3,4,2,8,6,9],
-            pointStart: 1
+            data: [
+                [Date.UTC(2014, 10, 4), 3],
+                [Date.UTC(2014, 10, 5), 5],
+                [Date.UTC(2014, 10, 6), 7],
+                [Date.UTC(2014, 10, 7), 26],
+                [Date.UTC(2014, 10, 8), 5],
+                [Date.UTC(2014, 10, 9), 9],
+                [Date.UTC(2014, 10, 10), 8],
+                [Date.UTC(2014, 10, 11), 6],
+                [Date.UTC(2014, 10, 12), 4],
+                [Date.UTC(2014, 10, 13), 9],
+                [Date.UTC(2014, 10, 14), 5],
+                [Date.UTC(2014, 10, 15), 8]
+            ],
+           // pointStart: 1
         }, {
             name: 'RESTRICTED',
-            data: [6,9,8,4,3,6,1],
-            pointStart: 1
+            data: [
+                [Date.UTC(2014, 10, 4), 4],
+                [Date.UTC(2014, 10, 5), 6],
+                [Date.UTC(2014, 10, 6), 1],
+                [Date.UTC(2014, 10, 7), 0],
+                [Date.UTC(2014, 10, 8), 3],
+                [Date.UTC(2014, 10, 9), 6],
+                [Date.UTC(2014, 10, 10), 2],
+                [Date.UTC(2014, 10, 11), 9],
+                [Date.UTC(2014, 10, 12), 9],
+                [Date.UTC(2014, 10, 13), 3],
+                [Date.UTC(2014, 10, 14), 9],
+                [Date.UTC(2014, 10, 15), 1]
+            ],
+            //pointStart: 1
         }, {
             name: 'TOTAL',
-            data: [10,16,23,30,31,29,19],
-            pointStart: 1
+            data: [
+                [Date.UTC(2014, 10, 4), 9],
+                [Date.UTC(2014, 10, 5), 1],
+                [Date.UTC(2014, 10, 6), 0],
+                [Date.UTC(2014, 10, 7), 6],
+                [Date.UTC(2014, 10, 8), 2],
+                [Date.UTC(2014, 10, 9), 3],
+                [Date.UTC(2014, 10, 10), 5],
+                [Date.UTC(2014, 10, 11), 1],
+                [Date.UTC(2014, 10, 12), 9],
+                [Date.UTC(2014, 10, 13), 0],
+                [Date.UTC(2014, 10, 14), 0],
+                [Date.UTC(2014, 10, 15), 5]
+            ],
+            //pointStart: 1
         }],
         loading: false
     };
@@ -301,18 +316,14 @@ var getSubTypePairArray = function(throughputsList) {
         }
       }
     for (j=0; j<subTypeList.length; j++) {
+      if (subTypeList[j]=='') 
+        subTypeList[j] = 'unspecified';
       pairList[j] = [subTypeList[j], numberList[j]];
     }
     console.log('subtype - numebr list', pairList);
     return pairList;
 }
 
-var countSubTypetNum = function(typeArray, subType) {
-      var num = 0;
-      for (i=0; i<typeArray.length; i++) {
-        if (typeArray[i].sub_type == subType) {
-            num++;
-        }
-      }
-      return num;
-  };
+var getDailyArray = function(throughputsList) {
+
+}
