@@ -90,21 +90,24 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
                       ['RESTRICTED', $scope.restrictedThroughputs.length]
                    ];
           case('conducted'):
-            return [
+            return getSubTypePairArray($scope.conductedThroughputs);
+                   /*[
                       ['OK', countSubTypetNum($scope.conductedThroughputs, 'OK')],
                       ['SENT', countSubTypetNum($scope.conductedThroughputs, 'SENT')],
                       ['OTHERS', countSubTypetNum($scope.conductedThroughputs, 'OTHERS')]
-                   ];
+                   ];*/
           case('failed'):
-            return [
+            return getSubTypePairArray($scope.failedThroughputs);
+                   /* [
                       ['TIMEOUT', countSubTypetNum($scope.failedThroughputs, 'TIMEOUT')],
                       ['OTHERS', countSubTypetNum($scope.failedThroughputs, 'OTHERS')],
-                   ];
+                   ];*/
           case('restricted'):
-            return [
+            return getSubTypePairArray($scope.restrictedThroughputs);
+                   /* [
                       ['DATALIMIT', countSubTypetNum($scope.restrictedThroughputs, 'DATALIMIT')],
                       ['OTHERS', countSubTypetNum($scope.restrictedThroughputs, 'OTHERS')],
-                   ];
+                   ];*/
         }
       }();
 }
@@ -118,7 +121,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         $scope.throughputs = $scope.conductedThroughputs.concat($scope.failedThroughputs, $scope.restrictedThroughputs);
         console.log('ALL THROUGHPUTS -->', $scope.throughputs);
         $scope.update_pie_items();
-        $scope.highchartsNG.series = [{data:[1,2,3,4], name: 'CONDUCTED'} , {data:[2,4,6,8], name: 'FAILED'}, {data:[0,3,1,2], name: 'RESTRICTED'}, {data:[9,9,9,10], name: 'TOTAL'}];
+        //$scope.highchartsNG.series = [{data:[1,2,3,4], name: 'CONDUCTED'} , {data:[2,4,6,8], name: 'FAILED'}, {data:[0,3,1,2], name: 'RESTRICTED'}, {data:[9,9,9,10], name: 'TOTAL'}];
       }
   }, true);
 
@@ -169,12 +172,57 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
                 type: 'line'
             }
         },
-        series: [{
-            data: [10, 15, 12, 8, 7],   // useless
-        }],
         title: {
-            text: 'Daily Throuput tests'
+            text: 'Daily Throuput tests',
+            x: -20 //center
         },
+        subtitle: {
+            text: '',
+            x: -20
+        },
+        xAxis: {
+            type: 'date',
+            tickInterval: 1,
+            title: {
+                text: 'November'
+            },
+            //categories: ['11-Nov', '12-Nov', '13-Nov', '14-Nov', '15-Nov', '16-Nov',
+              //  '17-Nov']
+        },
+        yAxis: {
+            title: {
+                text: 'Number of Tests'
+            },
+            min: 0,
+        },
+        legend: {
+                align: 'left',
+                verticalAlign: 'top',
+                y: 20,
+                floating: true,
+                borderWidth: 0
+        },
+        tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.x}-Nov <br>{point.y}'
+        },
+        series: [{
+            name: 'CONDUCTED',
+            data: [0,2,3,4,5,6,7],
+            pointStart: 1
+        }, {
+            name: 'FAILED',
+            data: [5,3,4,2,8,6,9],
+            pointStart: 1
+        }, {
+            name: 'RESTRICTED',
+            data: [6,9,8,4,3,6,1],
+            pointStart: 1
+        }, {
+            name: 'TOTAL',
+            data: [10,16,23,30,31,29,19],
+            pointStart: 1
+        }],
         loading: false
     };
 
@@ -240,6 +288,24 @@ app.directive('hcPie', function () {
   }
 });
 
+var getSubTypePairArray = function(throughputsList) {
+    var subTypeList = [];
+    var numberList = [];
+    var pairList =[];
+    for (i=0; i<throughputsList.length; i++) {
+        if (subTypeList.indexOf(throughputsList[i].sub_type) == -1) {  // a new sub type
+            subTypeList.push(throughputsList[i].sub_type);
+            numberList.push(1);
+        } else {
+          numberList[subTypeList.indexOf(throughputsList[i].sub_type)]++;
+        }
+      }
+    for (j=0; j<subTypeList.length; j++) {
+      pairList[j] = [subTypeList[j], numberList[j]];
+    }
+    console.log('subtype - numebr list', pairList);
+    return pairList;
+}
 
 var countSubTypetNum = function(typeArray, subType) {
       var num = 0;
