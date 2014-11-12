@@ -85,9 +85,9 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         switch($scope.pie_type) {
           case('all'):
             return [
+                      ['CONDUCTED', $scope.conductedThroughputs.length],
                       ['RESTRICTED', $scope.restrictedThroughputs.length],
                       ['FAILED', $scope.failedThroughputs.length],
-                      ['CONDUCTED', $scope.conductedThroughputs.length]
                    ];
           case('conducted'):
             return getSubTypePairArray($scope.conductedThroughputs);
@@ -123,7 +123,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
         var restrictedSeriesData = getDailyArray($scope.restrictedThroughputs);
         var failedSeriesData = getDailyArray($scope.failedThroughputs);
         var conductedSeriesData = getDailyArray($scope.conductedThroughputs);
-        $scope.highchartsNG.series = [{data:restrictedSeriesData, name: 'RESTRICTED'} , {data: failedSeriesData, name: 'FAILED'}, {data: conductedSeriesData, name: 'CONDUCTED'}, {data: getTotalDailyArray(restrictedSeriesData, conductedSeriesData, failedSeriesData), name: 'TOTAL'}];
+        $scope.highchartsNG.series = [{data: conductedSeriesData, name: 'CONDUCTED'}, {data:restrictedSeriesData, name: 'RESTRICTED'} , {data: failedSeriesData, name: 'FAILED'}, {data: getTotalDailyArray(restrictedSeriesData, conductedSeriesData, failedSeriesData), name: 'TOTAL'}];
       }
   }, true);
 
@@ -141,7 +141,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
             }
         },
         title: {
-            text: 'Daily Throuput tests',
+            text: 'Daily Throughput tests',
             x: -20 //center
         },
         subtitle: {
@@ -152,7 +152,7 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
             type: 'datetime',
             //tickInterval: 1,
             title: {
-                text: 'November'
+                text: '2014'
             },
             //categories: ['11-Nov', '12-Nov', '13-Nov', '14-Nov', '15-Nov', '16-Nov',
               //  '17-Nov']
@@ -171,77 +171,221 @@ app.controller("throughputController", function($scope, limitToFilter, $http, $l
                 borderWidth: 0
         },
         
-        series: [{
-            name: 'RESTRICTED',
-            data: [
-                [Date.UTC(2014, 10, 4), 9],
-                [Date.UTC(2014, 10, 5), 1],
-                [Date.UTC(2014, 10, 6), 0],
-                [Date.UTC(2014, 10, 7), 6],
-                [Date.UTC(2014, 10, 8), 2],
-                [Date.UTC(2014, 10, 9), 3],
-                [Date.UTC(2014, 10, 10), 5],
-                [Date.UTC(2014, 10, 11), 1],
-                [Date.UTC(2014, 10, 12), 9],
-                [Date.UTC(2014, 10, 13), 0],
-                [Date.UTC(2014, 10, 14), 0],
-                [Date.UTC(2014, 10, 15), 5]
-            ]
-            //[0,2,3,4,5,6,7],
-            //pointStart: 1
-        }, {
-            name: 'FAILED',
-            data: [
-                [Date.UTC(2014, 10, 5), 5],
-                [Date.UTC(2014, 10, 6), 2],
-                [Date.UTC(2014, 10, 7), 6],
-                [Date.UTC(2014, 10, 8), 5],
-                [Date.UTC(2014, 10, 9), 1],
-                [Date.UTC(2014, 10, 10), 3],
-                [Date.UTC(2014, 10, 11), 4],
-                [Date.UTC(2014, 10, 12), 1],
-                [Date.UTC(2014, 10, 13), 0],
-                [Date.UTC(2014, 10, 14), 5],
-            ],
-           // pointStart: 1
-        }, {
-            name: 'CONDUCTED',
-            data: [
-                [Date.UTC(2014, 10, 4), 4],
-                [Date.UTC(2014, 10, 5), 6],
-                [Date.UTC(2014, 10, 6), 1],
-                [Date.UTC(2014, 10, 7), 0],
-                [Date.UTC(2014, 10, 8), 3],
-                [Date.UTC(2014, 10, 9), 6],
-                [Date.UTC(2014, 10, 10), 2],
-                [Date.UTC(2014, 10, 11), 9],
-                [Date.UTC(2014, 10, 12), 9],
-                [Date.UTC(2014, 10, 13), 3],
-                [Date.UTC(2014, 10, 14), 9],
-                [Date.UTC(2014, 10, 15), 1]
-            ],
-            //pointStart: 1
-        }, {
-            name: 'TOTAL',
-            data: [
-                 [Date.UTC(2014, 10, 4), 3],
-                [Date.UTC(2014, 10, 5), 5],
-                [Date.UTC(2014, 10, 6), 7],
-                [Date.UTC(2014, 10, 7), 26],
-                [Date.UTC(2014, 10, 8), 5],
-                [Date.UTC(2014, 10, 9), 9],
-                [Date.UTC(2014, 10, 10), 8],
-                [Date.UTC(2014, 10, 11), 6],
-                [Date.UTC(2014, 10, 12), 4],
-                [Date.UTC(2014, 10, 13), 9],
-                [Date.UTC(2014, 10, 14), 5],
-                [Date.UTC(2014, 10, 15), 8]
-            ],
-            //pointStart: 1
-        }],
+        series: [],
         loading: false
     };
 
+// Load the fonts
+Highcharts.createElement('link', {
+   href: 'http://fonts.googleapis.com/css?family=Unica+One',
+   rel: 'stylesheet',
+   type: 'text/css'
+}, null, document.getElementsByTagName('head')[0]);
+
+Highcharts.theme = {
+   colors: ["#93bd41", "#FFCC00", "#E95850", "#FFFFFF"],    // 0066FF blue   , F78D1F orange
+   chart: {
+      backgroundColor: {
+         linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
+         stops: [
+            [0, '#2a2a2b'],
+            [1, '#3e3e40']
+         ]
+      },
+      style: {
+        // fontFamily: "'Unica One', sans-serif"
+      },
+      plotBorderColor: '#606063'
+   },
+   title: {
+      style: {
+         color: '#E0E0E3',
+         textTransform: 'uppercase',
+         fontSize: '22px'
+      }
+   },
+   subtitle: {
+      style: {
+         color: '#E0E0E3',
+         textTransform: 'uppercase'
+      }
+   },
+   xAxis: {
+      gridLineColor: '#707073',
+      labels: {
+         style: {
+            color: '#E0E0E3',
+            fontSize: '15px'
+         }
+      },
+      lineColor: '#707073',
+      minorGridLineColor: '#505053',
+      tickColor: '#707073',
+      title: {
+         style: {
+            color: '#A0A0A3',
+            fontSize: '17px'
+         }
+      }
+   },
+   yAxis: {
+      gridLineColor: '#707073',
+      labels: {
+         style: {
+            color: '#E0E0E3',
+            fontSize: '15px'
+         }
+      },
+      lineColor: '#707073',
+      minorGridLineColor: '#505053',
+      tickColor: '#707073',
+      tickWidth: 1,
+      title: {
+         style: {
+            color: '#A0A0A3',
+            fontSize: '17px'
+         }
+      }
+   },
+   tooltip: {
+      backgroundColor: 'rgba(0, 0, 0, 0.85)',
+      style: {
+         color: '#F0F0F0',
+         fontSize: '13px'
+      }
+   },
+   plotOptions: {
+      series: {
+         dataLabels: {
+            color: '#B0B0B3'
+         },
+         marker: {
+            lineColor: '#333'
+         }
+      },
+      boxplot: {
+         fillColor: '#505053'
+      },
+      candlestick: {
+         lineColor: 'black'
+      },
+      errorbar: {
+         color: 'white'
+      }
+   },
+   legend: {
+      itemStyle: {
+         color: '#E0E0E3'
+      },
+      itemHoverStyle: {
+         color: '#FFF'
+      },
+      itemHiddenStyle: {
+         color: '#606063'
+      }
+   },
+   credits: {
+      style: {
+         color: '#666'
+      }
+   },
+   labels: {
+      style: {
+         color: '#707073'
+      }
+   },
+
+   drilldown: {
+      activeAxisLabelStyle: {
+         color: '#F0F0F3'
+      },
+      activeDataLabelStyle: {
+         color: '#F0F0F3'
+      }
+   },
+
+   navigation: {
+      buttonOptions: {
+         symbolStroke: '#DDDDDD',
+         theme: {
+            fill: '#505053'
+         }
+      }
+   },
+
+   // scroll charts
+   rangeSelector: {
+      buttonTheme: {
+         fill: '#505053',
+         stroke: '#000000',
+         style: {
+            color: '#CCC'
+         },
+         states: {
+            hover: {
+               fill: '#707073',
+               stroke: '#000000',
+               style: {
+                  color: 'white'
+               }
+            },
+            select: {
+               fill: '#000003',
+               stroke: '#000000',
+               style: {
+                  color: 'white'
+               }
+            }
+         }
+      },
+      inputBoxBorderColor: '#505053',
+      inputStyle: {
+         backgroundColor: '#333',
+         color: 'silver'
+      },
+      labelStyle: {
+         color: 'silver'
+      }
+   },
+
+   navigator: {
+      handles: {
+         backgroundColor: '#666',
+         borderColor: '#AAA'
+      },
+      outlineColor: '#CCC',
+      maskFill: 'rgba(255,255,255,0.1)',
+      series: {
+         color: '#7798BF',
+         lineColor: '#A6C7ED'
+      },
+      xAxis: {
+         gridLineColor: '#505053'
+      }
+   },
+
+   scrollbar: {
+      barBackgroundColor: '#808083',
+      barBorderColor: '#808083',
+      buttonArrowColor: '#CCC',
+      buttonBackgroundColor: '#606063',
+      buttonBorderColor: '#606063',
+      rifleColor: '#FFF',
+      trackBackgroundColor: '#404043',
+      trackBorderColor: '#404043'
+   },
+
+   // special colors for some of the
+   legendBackgroundColor: 'rgba(0, 0, 0, 0.5)',
+   background2: '#505053',
+   dataLabelsColor: '#B0B0B3',
+   textColor: '#C0C0C0',
+   contrastTextColor: '#F0F0F3',
+   maskColor: 'rgba(255,255,255,0.3)'
+};
+
+// Apply the theme
+Highcharts.setOptions(Highcharts.theme);
   
 });
 
@@ -272,8 +416,7 @@ app.directive('hcPie', function () {
           text: 'Type / Subtype distribution'
         },
         tooltip: {
-          pointFormat: '{series.name}: <b>{point.percentage}%</b>',
-          percentageDecimals: 1
+          pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>',
         },
         plotOptions: {
           pie: {
@@ -283,9 +426,7 @@ app.directive('hcPie', function () {
               enabled: true,
               color: '#000000',
               connectorColor: '#00000',
-              formatter: function () {
-                return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %';
-              }
+              format: '<b>{point.name}</b>: {point.percentage:.1f} %',
             }
           }
         },
@@ -302,6 +443,7 @@ app.directive('hcPie', function () {
       
     }
   }
+
 });
 
 var getSubTypePairArray = function(throughputsList) {
@@ -317,7 +459,7 @@ var getSubTypePairArray = function(throughputsList) {
         }
       }
     for (j=0; j<subTypeList.length; j++) {
-      if (subTypeList[j]=='') 
+      if (subTypeList[j]=='' || subTypeList[j]==null) 
         subTypeList[j] = 'unspecified';
       pairList[j] = [subTypeList[j], numberList[j]];
     }
@@ -327,8 +469,8 @@ var getSubTypePairArray = function(throughputsList) {
 
 var getDailyArray = function(throughputsList) {
   
-  var dateNumList = [[Date.UTC(2014, 10, 4), 0],
-                  [Date.UTC(2014, 10, 5), 0],
+  var dateNumList = [//[Date.UTC(2014, 10, 4), 0],
+                  //[Date.UTC(2014, 10, 5), 0],
                   [Date.UTC(2014, 10, 6), 0],
                   [Date.UTC(2014, 10, 7), 0],
                   [Date.UTC(2014, 10, 8), 0],
@@ -338,7 +480,8 @@ var getDailyArray = function(throughputsList) {
                   [Date.UTC(2014, 10, 12), 0],
                   [Date.UTC(2014, 10, 13), 0],
                   [Date.UTC(2014, 10, 14), 0],
-                  [Date.UTC(2014, 10, 15), 0]];   // last date not show in chart
+                  //[Date.UTC(2014, 10, 15), 0]
+                  ];   // last date not show in chart
   for (i=0; i<dateNumList.length-1; i++) {
     for (j=0; j<throughputsList.length; j++) {
         if (throughputsList[j].date >= dateNumList[i][0] && throughputsList[j].date < dateNumList[i+1][0]) {
@@ -351,9 +494,13 @@ var getDailyArray = function(throughputsList) {
 }
 
 var getTotalDailyArray = function(a1, a2, a3) {
-  var total = a1;
+  var total = [];
   for (i=0; i<a1.length; i++) {
+    total[i] = [];
+    total[i][0] = a1[i][0];
     total[i][1] = a1[i][1] + a2[i][1] +a3[i][1];
   }
   return total;
 }
+
+
